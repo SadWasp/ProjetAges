@@ -21,7 +21,7 @@ import ssl
 #from cryptography.fernet import Fernet
 #import basehash
 
-connection_string = "mongodb+srv://admin2:123@cluster0.khvrb.mongodb.net/ages?retryWrites=true&w=majority"
+connection_string = "********"
 client = pymongo.MongoClient(connection_string, ssl_cert_reqs=ssl.CERT_NONE, connectTimeoutMS=30000, socketTimeoutMS=None, socketKeepAlive=True, connect=False, maxPoolsize=1)
 
 db = client['ages']
