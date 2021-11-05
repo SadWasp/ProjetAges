@@ -2,12 +2,18 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ItemSerializer
 from .serializers import UserSerializer
-from .serializers import OrderSerializer
-from .serializers import Item_OrderSerializer
+from .serializers import LocationSerializer
+
+from .serializers import OrdersSerializer
+from .serializers import Clients_OrdersSerializer
+
 from .models import Item
 from .models import User
-from .models import Item_Order
+from .models import Location
+
 from .models import Order
+from .models import Client_Order
+
 import pymongo
 #import json
 #from pymongo import MongoClient
@@ -21,16 +27,20 @@ import ssl
 #from cryptography.fernet import Fernet
 #import basehash
 
-connection_string = "********"
+connection_string = "***********"
 client = pymongo.MongoClient(connection_string, ssl_cert_reqs=ssl.CERT_NONE, connectTimeoutMS=30000, socketTimeoutMS=None, socketKeepAlive=True, connect=False, maxPoolsize=1)
 
 db = client['ages']
 items_collection = db["Items"]
 users_collection = db["Users"]
-orders_collection = db["Order"]
-item_Orders_collection = db["Item_Order"]
+orders_collection = db["Orders"]
+client_orders_collection = db["Client_Orders"]
+location_collection = db["Locations"]
 
 client.close()
+
+
+
 @api_view(['GET'])
 def getRoutes(request):
     routes = [
@@ -110,6 +120,12 @@ def getItem(request, pk):
     serializer = ItemSerializer(item_, many=False)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def getItemWithScan(request, pk):
+    item_ = items_collection.find_one({"scan": pk})
+    serializer = ItemSerializer(item_, many=False)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 def createItem(request):
     data = request.data
@@ -119,7 +135,8 @@ def createItem(request):
     item = Item.objects.create(
         name = data['name'],
         description = data['description'],
-        location = data['location'],
+        scan = data['scan'],
+        locationId = data['locationId'],
         quantity = data['quantity'],
     )
     serializer = ItemSerializer(item, many=False)
@@ -143,7 +160,17 @@ def updateItem(request, pk):
 def deleteItem(request, pk):
     item = items_collection.find_one({"id": pk})
     items_collection.delete_one(item)
+
+
+    orders = orders_collection.find({"itemId": pk})
+    orders_collection.remove(orders)
+
+
     return Response({"res": True, "message": "item deleted"})
+
+
+
+
 
 
 @api_view(['GET'])
@@ -239,8 +266,16 @@ def authLogout(request, pk):
 
 @api_view(['POST'])
 def authReg(request):
+    #valid = False
     print("reg msg",request.data)
+    #json_acceptable_string = request.data.replace("'", "\"")
     data = request.data
+
+    #data = request.data#mess with that
+
+    #last = users_collection.find().sort("id", pymongo.ASCENDING)
+   # newId = last
+    #encPass = data['password'].encode("utf-8")
     if db['Users'].count_documents({ 'userName': data['userName'] }, limit = 1) != 0:
         return Response(False)
 
@@ -249,13 +284,22 @@ def authReg(request):
         password = data['password'], #encrypt password.
         role = data['role'], #lst of choices.
         nbOrdersFilled = 0,
-        isConnected = False,
+        isConnected = True,
     )
     serializer = UserSerializer(user, many=False)
 
-    
+    # userdb = {
+    #     "id": user.id,
+    #     "userName": data['userName'],
+    #     "password" : base64.b64encode(encPass),
+    #     "role" : data['role'],
+    #     "nbOrdersFilled" : 0,
+    #     "isConnected" : False
+    # }
     users_collection.insert_one(serializer.data).inserted_id
     return Response(serializer.data)
+
+    #return Response("User created.")
 
 def updateUserFunc(row, value, pk):
     user = users_collection.find_one({"id": pk})
@@ -267,47 +311,143 @@ def updateUserFunc(row, value, pk):
     return changedUser
 
 
-def createOrder(request):
+
+@api_view(['POST'])
+def createOrder(request, pk):
+    print("in function")
     data = request.data
-    order = Order.objects.create(
-        clientId = data['clientId'],
-        price = data['price'],
-        isFilled = data['isFilled'],
+
+    print("request:", request.data)
+
+    client_order = Client_Order.objects.create(
+        idClient = pk,
+        status = "todo"
+
     )
-    serializer = OrderSerializer(order, many=False)
-    orders_collection.insert_one(serializer.data).inserted_id
+    serializer = Clients_OrdersSerializer(client_order, many=False)
+    client_orders_collection.insert_one(serializer.data).inserted_id
+
+
+
+
+
+
+
+
+
+    for order in data['Order']:
+        #order_id = client_order.id
+        #print("here pls:", serializer.data['id'])
+
+        item = items_collection.find_one({"id": order['itemId']})
+
+        quant = item['quantity'] - order['quantity']
+
+        change = {"$set": {"quantity": quant}}
+        items_collection.update_one(item, change)
+
+
+        order_1 = {
+            "clientId" : pk,
+            "itemId": order['itemId'],
+            "orderId" : serializer.data['id'],
+            "quantity": order['quantity']
+        }
+        orders_collection.insert_one(order_1)
+
+    return Response(True)
+
+@api_view(['DELETE'])
+def deleteOrder(request, pk):
+    order = client_orders_collection.find_one({"id": pk})
+
+    ordersToDelete = orders_collection.find({'orderId': pk, 'clientId': order['idClient']})
+    for o in ordersToDelete:
+        item = items_collection.find_one({"id": o['itemId']})
+        quant = item['quantity'] + o['quantity']
+        change = {"$set": {"quantity": quant}}
+        items_collection.update_one(item, change)
+        orders_collection.delete_one(o)
+
+
+    client_orders_collection.delete_one(order)
+
+
+    return Response({"res": True, "message": "order deleted"})
+
+
+@api_view(['GET'])
+def getAllOrdersFrom(request, pk):
+    ordersLst = client_orders_collection.find({'idClient': pk})
+    lst = []
+
+    for client_order in ordersLst:
+        orders_ = orders_collection.find({'orderId': client_order['id']})
+        olst = []
+        for o in orders_:
+            olst.append({"itemId" : o['itemId'], "quantity": o['quantity'] })
+
+        lst.append({"orderId": client_order['id'], "Status":  client_order['status'],"Orders": olst})
+
+    return Response(lst)
+
+@api_view(['GET'])
+def getAllOrders(request):
+
+    ordersLst = client_orders_collection.find()
+    lst = []
+
+    for client_order in ordersLst:
+        orders_ = orders_collection.find({'orderId': client_order['id']})
+        olst = []
+        for o in orders_:
+            olst.append({"itemId" : o['itemId'], "quantity": o['quantity'] })
+
+        lst.append({"orderId": client_order['id'], "Status":  client_order['status'], "Orders": olst})
+
+    return Response(lst)
+
+
+
+@api_view(['DELETE'])
+def deleteItemInOrder(request, orderId, itemId):
+    order = orders_collection.find({'orderId': orderId, 'itemId': itemId})
+    orders_collection.delete_one(order)
+    return Response({"res": True, "message": "item in order deleted"})
+
+#@api_view(['POST'])
+#def addItemInOrder(request, orderId):
+
+@api_view(['PUT'])
+def updateOrder(request, orderId):
+    order = client_orders_collection.find({'id': orderId})
+    change = {"$set": {"status": "todo"}}
+    if(order['status'] == "todo"):
+        change = {"$set": {"status": "En cours"}}
+    if(order['status'] == "En cours"):
+        change = {"$set": {"status": "Done"}}
+    client_orders_collection.update_one(order, change)
+
+    return Response(True)
+
+@api_view(['GET'])
+def getLocations(request):
+    locations = location_collection.find()
+    serializer = LocationSerializer(locations, many=True)
     return Response(serializer.data)
 
-
-def createItem_Order(request):
+@api_view(['POST'])
+def createLocation(request):
     data = request.data
-    item_order = Item_Order.objects.create(
-        orderId = data['orderId'],
-        itemId = data['itemId'],
-        quantity = data['quantity'],
-        checked = data['checked'],
+    loc = Location.objects.create(
+        location = data['location']
     )
-    serializer = Item_OrderSerializer(item_order, many=False)
-    item_Orders_collection.insert_one(serializer.data).inserted_id
+    serializer = LocationSerializer(loc, many=False)
+    location_collection.insert_one(serializer.data).inserted_id
     return Response(serializer.data)
 
-
-def fetchOrder(orderPk):
-    order = orders_collection.find_one({"id": orderPk})
-    items = item_Orders_collection.find({"orderId": orderPk})
-
-    return Response({'clientId': order['clientId'],'orders': items, 'price': order['price'], 'isFilled': order['isFilled']})
-
-def checkItem(orderPk, itemId):
-    item = items_collection.find_one({"id": itemId})
-    order_item = item_Orders_collection.find({"orderId": orderPk})
-
-    if item['quantity'] >= order_item['quantity']:
-        change = {"$set": {'checked': True}}
-        order_item.update_one(item, change)
-        change = {"$set": {'quantity': item['quantity'] - order_item['quantity']}}
-        items_collection.update_one(order_item, change)
-        return Response("OK")
-
-    return Response("quantities insufficient")
-
+@api_view(['GET'])
+def getItemsAtLocation(request, pk): #pk : locationID
+    items = items_collection.find({'locationId': pk})
+    serializer = ItemSerializer(items, many=True)
+    return Response(serializer.data)
