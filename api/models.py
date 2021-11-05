@@ -2,10 +2,10 @@ from django.db import models
 
 class Item(models.Model):
     name = models.TextField()
-    location = models.TextField()
+    description = models.TextField()
+    scan = models.TextField()
+    locationId = models.IntegerField()
     quantity = models.IntegerField()
-    #add price.
-
 
     def __str__(self):
         return self.name
@@ -28,24 +28,33 @@ class User(models.Model):
         ordering = ['role']
 
 class Order(models.Model):
-    clientId = models.IntegerField()
-    price = models.FloatField()
-    isFilled = models.BooleanField()
+    idClient = models.IntegerField()
+    idItem  = models.IntegerField()
+    idOrder  = models.IntegerField()
+    quantity  = models.IntegerField()
 
     def __str__(self):
-        return self.clientId
+        return self.idOrder
 
     class Meta:
-        ordering = ['isFilled']
+        ordering = ['idOrder']
 
-class Item_Order(models.Model):
-    orderId = models.IntegerField()
-    itemId = models.IntegerField()
-    quantity = models.IntegerField()
-    checked = models.BooleanField()
+class Client_Order(models.Model):
+    idClient = models.IntegerField()
+    status = models.TextField()
 
     def __str__(self):
-        return self.orderId
+        return self.idClient
 
     class Meta:
-        ordering = ['orderId']
+        ordering = ['idClient']
+
+
+class Location(models.Model):
+    location = models.TextField()
+
+    def __str__(self):
+        return self.location
+
+    class Meta:
+        ordering = ['location']
