@@ -1,6 +1,7 @@
 
 import 'package:ages_app/Auths/components/rounded_input_field.dart';
 import 'package:ages_app/Auths/components/rounded_password_field.dart';
+import 'package:ages_app/Commande/commande.dart';
 import 'package:ages_app/Module/MyProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:ages_app/Users/User.dart';
@@ -13,10 +14,10 @@ class Body extends StatelessWidget {
   const Body({
     Key? key,
   }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     Map<String,String>_data = {'username': "", 'pw': ""};
+
     final pwController = TextEditingController();
     final UNController = TextEditingController();
     Size size = MediaQuery.of(context).size;
@@ -55,6 +56,7 @@ class Body extends StatelessWidget {
                   hintText: "Nom d'utilisateur",
                   controller: UNController,
                   onChanged: (value) =>_data['username'] = value,
+                  icon: Icons.person ,
                 ),
                 RoundedPasswordField(
                   controller: pwController,
@@ -94,7 +96,7 @@ class Body extends StatelessWidget {
                             foreground: Paint()
                               ..style = PaintingStyle.stroke
                               ..strokeWidth = 1
-                              ..color = kPrimaryLightColor,
+                              ..color = kPurple,
                           ),
                         ),
                         Text(

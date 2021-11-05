@@ -5,7 +5,6 @@ import 'package:ages_app/Module/custom_appbar.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:ages_app/Module/Exceptions.dart';
 import 'package:ages_app/Users/User.dart';
 
 import '../../../Module/utils.dart' as utils;
@@ -33,10 +32,9 @@ class ProfileScreen extends StatelessWidget {
         ),
         
         Center(
-          
           child: Container(
-            decoration: BoxDecoration(color: Colors.transparent),
-            
+            decoration: BoxDecoration(
+            color: Colors.transparent),
             width: size.width - 50,
             height: size.height -200,
             child: Card(
@@ -50,6 +48,18 @@ class ProfileScreen extends StatelessWidget {
                     child: Icon( Icons.person, size: 55 ),
                   ),
                    SizedBox(height: size.height * 0.03),
+                  Container(
+                    width: 150,
+                    height: 25,
+                    margin: const EdgeInsets.all(3.0),
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1)
+              ),
+                    child: Center(child: Text(user.getUsername(),
+                          style: utils.CustomTextStyle.TextFontInfo(context))),
+                  ),
+
 
                    context.watch<MyProvider>().loading
                   ? CupertinoActivityIndicator()

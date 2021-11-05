@@ -39,10 +39,9 @@ class User {
     });
   }
 
-  static Future<User> RegisterUser(
+  static Future<User> RegisterUser( 
     
-    
-      String username, String Password, String role) async {
+    String username, String Password, String role) async {
     if ((username.isEmpty || Password.isEmpty))
       throw UIException("Identifiants Incorectes");
     if (!regExp.hasMatch(Password)) {
@@ -56,7 +55,7 @@ class User {
     Map<String, dynamic> _res = await postRequest(api: 'auth/register', body: {
       "userName": username,
       "password": encrypted.base64,
-      "role": "User"
+      "role": role
     });
 
     return Future.delayed(Duration(seconds: 3), () {

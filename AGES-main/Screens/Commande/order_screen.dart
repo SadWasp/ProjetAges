@@ -7,7 +7,7 @@ class OrderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(false,""),
-      body: SwipeCard(),
+      body: OrderCard(),
     );
   }
 }

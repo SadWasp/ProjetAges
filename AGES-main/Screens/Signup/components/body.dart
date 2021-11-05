@@ -9,11 +9,22 @@ import 'package:ages_app/Module/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Body extends StatelessWidget {
+class Body extends StatefulWidget {
+  @override
+  _BodyState createState() => _BodyState();
+}
+
+class _BodyState extends State<Body> {
   final pwController = TextEditingController();
+
   final cpwController = TextEditingController();
+
   final UNController = TextEditingController();
+
   final Map<String, String> _data = {'username': "", 'pw': "", 'cpw': ""};
+
+  bool client = true;
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -33,7 +44,7 @@ class Body extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              SizedBox(height: size.height * 0.2),
+              SizedBox(height: size.height * 0.13),
               Text("AGES",
                   style: GoogleFonts.lato(
                     textStyle: TextStyle(
@@ -51,6 +62,7 @@ class Body extends StatelessWidget {
                 controller: UNController,
                 hintText: "Nom d'utilisateur",
                 onChanged: (value) => _data['username'] = value,
+                icon: Icons.person ,
               ),
               RoundedPasswordField(
                 controller: pwController,
@@ -62,6 +74,28 @@ class Body extends StatelessWidget {
                 text: "Confirmer mot de passe",
                 onChanged: (value) => _data['cpw'] = value,
               ),
+              CheckboxListTile(
+              title: Text("Client"),
+              secondary: Icon(Icons.person),
+              value: client,
+               onChanged: (bool? value){
+                 setState((){
+                   client = value!;
+                 });
+               },
+               activeColor: Colors.black,
+               ),
+               CheckboxListTile(
+              title: Text("Employé"),
+              secondary: Icon(Icons.work),
+              value: !client,
+               onChanged: (bool? value){
+                 setState((){
+                   client = !value!;
+                 });
+               },
+               activeColor: Colors.black,
+               ),
               context.watch<MyProvider>().loading
                   ? CupertinoActivityIndicator()
                   : ElevatedButton(
@@ -70,10 +104,11 @@ class Body extends StatelessWidget {
                           try {
                             if(_data['cpw'] == null || _data['cpw'] == null  || (_data['cpw'] != _data['pw']))
                               {throw UIException("Entrer 2 mots de passes identiques.");}
+                            String typeUser = (client ? "Client" : "User");
                             context.read<MyProvider>().setLoading(true);
                             context.read<MyProvider>().setUser(
                                 await User.RegisterUser('${_data['username']}',
-                                    '${_data['pw']}', "User"));
+                                    '${_data['pw']}', typeUser));
                           } catch (e) {
                             final snackBar = SnackBar(
                               content: Text('$e'),

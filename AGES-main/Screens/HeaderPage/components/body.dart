@@ -1,3 +1,4 @@
+import 'package:ages_app/Module/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:ages_app/Users/User.dart';
 import 'package:ages_app/Module/utils.dart' as utils;
@@ -49,7 +50,7 @@ class body extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Card(
-                color: Colors.red,
+                color: kHighLightSecondaryTextColor,
                 child: new InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/Articles');
@@ -63,9 +64,10 @@ class body extends StatelessWidget {
                 ),
               ),
               Card(
-                color: Colors.blue,
+                color: kHighLightSecondaryTextColor,
                 child: new InkWell(
                     onTap: () {
+                      
                       Navigator.pushNamed(context, '/Commande');
                     },
                     child: Padding(
@@ -80,7 +82,7 @@ class body extends StatelessWidget {
           ),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Card(
-              color: Colors.green,
+              color: kHighLightSecondaryTextColor,
               child: new InkWell(
                 onTap: () {
                   Navigator.pushNamed(context, '/Profile');
@@ -94,7 +96,7 @@ class body extends StatelessWidget {
             ),
             user.getRole() == "admin"
                 ? Card(
-                    color: Colors.deepOrange,
+                    color: kHighLightSecondaryTextColor,
                     child: new InkWell(
                       onTap: () {
                         Navigator.pushNamed(context, '/AdminPannel');
@@ -107,7 +109,21 @@ class body extends StatelessWidget {
                                   context))),
                     ),
                   )
-                : Card(
+                : user.getRole() == "User"
+                ? Card(
+                    color: kHighLightSecondaryTextColor,
+                    child: new InkWell(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/LocalisationPage');
+                      },
+                      child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 50, horizontal: 33),
+                          child: Text("Localisation",
+                              style: utils.CustomTextStyle.HeaderCardTextFont(
+                                  context))),
+                    ),
+                  ): Card(
                     color: Colors.transparent,
                     child: new InkWell(
                       child: Padding(
