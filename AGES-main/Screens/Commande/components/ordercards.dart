@@ -286,7 +286,7 @@ class Cards extends StatelessWidget {
                               try {
                                 try {
                                   context.read<MyProvider>().setLoading(true);
-                                  //Commande.complete(commande.orderId!);               //TO DO in backend ?
+                                  Navigator.pushNamed(context, '/MapPage');              //TO DO in backend ?
                                 } catch (e) {
                                   final snackBar = SnackBar(
                                     content: Text('$e'),
@@ -296,6 +296,7 @@ class Cards extends StatelessWidget {
                                       .showSnackBar(snackBar);
                                 }
                               } finally {
+                                context.read<MyProvider>().setMapModel(commande.orderId!);
                                 context.read<MyProvider>().setCommande();
                                 context.read<MyProvider>().setLoading(false);
                               }
@@ -305,7 +306,7 @@ class Cards extends StatelessWidget {
                                 : Container(
                                     margin: const EdgeInsets.only(top: 20.0),
                                     child: buildCallContainer(
-                                        "Completer",
+                                        "Faire la commande",  
                                         kPrimaryLightColor,
                                         context),
                                   ))
@@ -321,6 +322,7 @@ class Cards extends StatelessWidget {
                                 try {
                                   context.read<MyProvider>().setLoading(true);
                                   Commande.delete(commande.orderId!);
+                                  context.read<MyProvider>().setCommande();
                                 } catch (e) {
                                   final snackBar = SnackBar(
                                     content: Text('$e'),

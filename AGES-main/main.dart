@@ -14,6 +14,8 @@ import 'package:ages_app/Screens/HeaderPage/headerpage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'Screens/MAP/floorplan_screen.dart';
+
 void main() {
   runApp(MultiProvider(
     providers: [
@@ -43,6 +45,7 @@ class MyApp extends StatelessWidget {
       },
     );
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => context.watch<MyProvider>().user == null
@@ -94,6 +97,11 @@ class MyApp extends StatelessWidget {
             (context.watch<MyProvider>().user?.getRole() == "admin") ||
                     (context.watch<MyProvider>().user?.getRole() == "User")
                 ? LocalisationPage()
+                : HeaderPage(),
+        '/MapPage': (BuildContext context) =>
+            (context.watch<MyProvider>().user?.getRole() == "admin") ||
+                    (context.watch<MyProvider>().user?.getRole() == "User")
+                ? FloorPlanScreen()
                 : HeaderPage(),
       },
       title: 'AGES',

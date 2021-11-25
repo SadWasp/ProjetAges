@@ -1,3 +1,5 @@
+import 'package:ages_app/Location/location.dart';
+import 'package:ages_app/MapModel/mapModel.dart';
 import 'package:ages_app/Users/User.dart';
 import 'package:ages_app/Items/Items.dart';
 import 'package:ages_app/Commande/commande.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 class MyProvider with ChangeNotifier {
   bool loading = false;
   String scan = "";
+  Location? location;
   User? user;
   Item? item;
   List<Map<Item, int>> cart = [];
@@ -13,10 +16,19 @@ class MyProvider with ChangeNotifier {
   List<Commande> commande = [];
   List<Commande> commandeEnCours = [];
   List<Commande> commandeTerminer = [];
+  List<dynamic> mapLocations = [];
+
+  getMapModel()=> mapLocations;
+
+  setMapModel(int id) async {
+    mapLocations = await mapModel.getListItemsByOrder(id.toString());
+    notifyListeners();
+  }
 
   disconnect(bool dc) {
     
     dc ? user = null : null;
+    dc ? location = null : null;
     dc ? newItemData = {'name': "", 'location': "", 'quantity': "",'description': ""} : null;
     dc ? scan = "" : null;
     dc ? item = null : null;
@@ -24,6 +36,7 @@ class MyProvider with ChangeNotifier {
     dc ? cart = [] : null;
     dc ? commandeEnCours = [] : null;
     dc ? commandeTerminer = [] : null;
+    dc ? mapLocations = [] : null;
     notifyListeners();
   }
 
@@ -134,4 +147,15 @@ class MyProvider with ChangeNotifier {
   }
 
   getCommandeEnTerminer() => commande;
+
+  getLocation() => location;
+
+  getLocationString(){
+    return (location ==null ? "Chargement Location" : location!.location);
+  } 
+
+  setLocation(int id) async {
+    location = await Location.getLocation(id);
+    notifyListeners();
+  }
 }

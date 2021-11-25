@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     User user = context.read<MyProvider>().getUser();
     return Scaffold(
-      appBar: CustomAppBar(false, "Profile"),
+      appBar: CustomAppBar(false, "Liste Items en commande"),
       body: Stack(children: [
         Container(
           decoration: BoxDecoration(

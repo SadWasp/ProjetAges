@@ -37,7 +37,7 @@ Container LocalisationBody(Future<List<Location>> listLoc, User user) {
           );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Erreur'));
+          return Center(child: Text('Erreur Loc'));
         }
 
         return ListView.separated(
@@ -198,7 +198,7 @@ class PopUpCard extends StatelessWidget {
                                                 );
                                               }
                                               if (snapshot.hasError) {
-                                                return Center(child: Text('Erreur'));
+                                                return Center(child: Text('Erreur Loc 2'));
                                               }
                                 
                                               return ListView.separated(

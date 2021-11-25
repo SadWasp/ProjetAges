@@ -39,9 +39,8 @@ class User {
     });
   }
 
-  static Future<User> RegisterUser( 
-    
-    String username, String Password, String role) async {
+  static Future<User> RegisterUser(
+      String username, String Password, String role) async {
     if ((username.isEmpty || Password.isEmpty))
       throw UIException("Identifiants Incorectes");
     if (!regExp.hasMatch(Password)) {
@@ -65,14 +64,15 @@ class User {
   }
 
   static Future<bool> Disconnect(int Id) async {
-    
     var _res = await singlePostRequest(
-        api: 'auth/'+Id.toString()+'/logout',
-        body: {});
+        api: 'auth/' + Id.toString() + '/logout', body: {});
 
     return Future.delayed(Duration(seconds: 3), () {
-      if(_res == 'true'){return true;}else{return false; }
+      if (_res == 'true') {
+        return true;
+      } else {
+        return false;
+      }
     });
   }
-
 }

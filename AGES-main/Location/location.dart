@@ -3,8 +3,9 @@ import 'package:ages_app/Items/Items.dart';
 
 class Location{
   int? id = -1;
-  String? location = "A00-00A";
-
+  String? location = "Reception";
+  Map<String, int> x = {"x" : 0};
+  Map<String, int> y = {"y" : 0};
 
   Location({this.id,this.location});
 
@@ -44,5 +45,6 @@ class Location{
     Location location = Location.fromJson(res);
     return location;
   }
+  
 
 }

@@ -1,4 +1,5 @@
 import 'package:ages_app/Auths/functions.dart';
+import 'package:ages_app/Location/location.dart';
 import 'package:ages_app/Module/Exceptions.dart';
 import 'package:ages_app/Users/User.dart';
 
@@ -31,7 +32,7 @@ class Item{
     data["id"] = this.id;
     data["name"] = this.name;
     data["description"] = this.description;
-    data["locationId"] = this.location;
+    data["location"] = this.location;
     data["quantity"] = this.quantite;
     data["scan"] = this.scan;
     return data;

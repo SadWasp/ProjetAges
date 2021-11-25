@@ -28,7 +28,7 @@ class CustomTextStyle {
   }
 
   static TextStyle DisconnectButton(BuildContext context){
-    return TextStyle(fontSize: 15,color:kHighLightSecondaryTextColor);
+    return TextStyle(fontSize: 15,color:kPrimaryLightColor);
   }
   static TextStyle CardsNoOrder(BuildContext context){
     return TextStyle(fontSize: 25,color: kHighLightSecondaryTextColor);

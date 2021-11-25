@@ -33,7 +33,7 @@ Container ArticlesBody(Future<List<Item>> listItem, User user) {
           );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Erreur'));
+          return Center(child: Text(snapshot.error.toString()));
         }
 
         return ListView.separated(
@@ -55,12 +55,12 @@ Container ArticlesBody(Future<List<Item>> listItem, User user) {
                       }));
                     },
                     child: Hero(
-                      tag: "${item?.name}",
+                      tag: "${item!.id}",
                       child: Row(
                         children: [
                           Expanded(
                             flex: 3,
-                            child: Text("${item?.name}",
+                            child: Text("${item.name}",
                                 style: utils.CustomTextStyle.TextFontTitle(
                                     context)),
                           ),
@@ -74,11 +74,11 @@ Container ArticlesBody(Future<List<Item>> listItem, User user) {
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text("Description: ${item?.description}",
+                                    Text("Description: ${item.description}",
                                         style:
                                             utils.CustomTextStyle.TextFontInfo(
                                                 context), overflow: TextOverflow.fade,maxLines: 2, softWrap: true,),
-                                    Text("Quantite restante: ${item?.quantite}",
+                                    Text("Quantite restante: ${item.quantite}",
                                         style:
                                             utils.CustomTextStyle.TextFontInfo(
                                                 context)),
@@ -131,11 +131,13 @@ class PopUpCard extends StatelessWidget {
   const PopUpCard({Key? key, this.item, required this.user}) : super(key: key);
   final User user;
   final Item? item;
+  
+  
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Hero(
-        tag: "${item?.name}",
+        tag: "${item?.id}",
         child: Material(
           color: kPrimaryLightColor,
           elevation: 2,
@@ -191,7 +193,7 @@ class PopUpCard extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text("Descrition de l'article",
+                            Text("Description de l'article",
                                 style: utils.CustomTextStyle.TextFontInfo(
                                     context)),
                             Text(item!.description!,
@@ -249,6 +251,7 @@ class PopUpCard extends StatelessWidget {
                       if ((user.getRole() == "User" ||
                               user.getRole() == "admin") &&
                           !context.watch<MyProvider>().loading)
+                        
                         Container(
                           width: 350,
                           margin: const EdgeInsets.all(8.0),
@@ -264,11 +267,18 @@ class PopUpCard extends StatelessWidget {
                               Text("Localisation: ",
                                   style: utils.CustomTextStyle.TextFontInfo(
                                       context)),
-                              Text(
-                                  //convert to listbuilder call all location
-                                  item!.location!.toString(),
-                                  style: utils.CustomTextStyle
-                                      .TextFontPrimaryDescription(context)),
+                              Container(
+                                width: 150,
+                                child: ElevatedButton(onPressed: ()=>{
+
+                                },
+                                  style: ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(kPrimaryColor),),
+                                  child: Text(
+                                    item!.location!.toString(),
+                                    style: utils.CustomTextStyle
+                                        .TextFontPrimaryDescription(context)),),
+                              )
+                              
                             ],
                           ),
                         ),
