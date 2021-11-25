@@ -22,6 +22,7 @@ urlpatterns = [
 
 
     path('orders/<int:pk>/', views.getAllOrdersFrom),
+    path('orders/locations/<int:pk>/', views.getOrdersInOrder),
     path('orders/', views.getAllOrders),
 
 
@@ -31,6 +32,8 @@ urlpatterns = [
     path('orders/<int:pk>/delete/', views.deleteOrder),
 
 
+    path('orders/item/picked/<int:orderId>/<int:itemId>/', views.pickedItem),
+
     #items in order:
     path('orders/<int:orderId>/<int:itemId>/delete/', views.deleteItemInOrder),
     path('orders/<int:orderId>/update/', views.updateOrder),
@@ -38,6 +41,15 @@ urlpatterns = [
     #path('orders/<int:orderId>/addItem/', views.addItemInOrder),
     #path('orders/<int:orderId>/<int:itemId>/modify/', views.modifyItemInOrder),
 
+
+
+
+
+
+
     path('locations/', views.getLocations),
     path('locations/create/', views.createLocation),
     path('locations/<int:pk>/getItems/', views.getItemsAtLocation),
+    path('locations/<int:pk>/', views.getLocationById),
+
+]
