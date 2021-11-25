@@ -13,7 +13,25 @@ from .models import Location
 
 from .models import Order
 from .models import Client_Order
+rowNum = [-1, 0, 0, 1]
+colNum = [0, -1, 1, 0]
 
+ROW = 17
+COL = 21
+
+from sys import maxsize
+from itertools import permutations
+
+
+manager = None
+data = {}
+
+import math
+
+
+#from ortools.constraint_solver import routing_enums_pb2
+#from ortools.constraint_solver import pywrapcp
+from collections import deque
 import pymongo
 #import json
 #from pymongo import MongoClient
@@ -27,7 +45,7 @@ import ssl
 #from cryptography.fernet import Fernet
 #import basehash
 
-connection_string = "***********"
+connection_string = "mongodb+srv://admin2:123@cluster0.khvrb.mongodb.net/ages?retryWrites=true&w=majority"
 client = pymongo.MongoClient(connection_string, ssl_cert_reqs=ssl.CERT_NONE, connectTimeoutMS=30000, socketTimeoutMS=None, socketKeepAlive=True, connect=False, maxPoolsize=1)
 
 db = client['ages']
@@ -38,6 +56,92 @@ client_orders_collection = db["Client_Orders"]
 location_collection = db["Locations"]
 
 client.close()
+
+mat = [
+   # 0 1 2 3 4 5 6 7 8 9                       21
+    [0,1,0,0,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,1,1,0],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,1,1,1,1,1,1,1,1],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,0],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,0],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,0],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,0],
+    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0],
+    [0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,1,1,1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0],
+    [0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] #17
+    ]
+
+class Point:
+    def __init__(self,x: int, y: int):
+        self.x = x
+        self.y = y
+
+class queueNode:
+    def __init__(self,pt: Point, dist: int):
+        self.pt = pt  # The coordinates of the cell
+        self.dist = dist  # Cell's distance from the source
+
+def isValid(row: int, col: int):
+    return (row >= 0) and (row < ROW) and (col >= 0) and (col < COL)
+
+def BFS(mat, src: Point, dest: Point):
+    if mat[src.x][src.y]!=1 or mat[dest.x][dest.y]!=1:
+        return -1
+
+    visited = [[False for i in range(COL)]
+                       for j in range(ROW)]
+
+    visited[src.x][src.y] = True
+
+    q = deque()
+
+    s = queueNode(src,0)
+    q.append(s)
+    while q:
+        curr = q.popleft()
+        pt = curr.pt
+        if pt.x == dest.x and pt.y == dest.y:
+            return curr.dist
+
+        for i in range(4):
+            row = pt.x + rowNum[i]
+            col = pt.y + colNum[i]
+
+            if (isValid(row,col) and
+               mat[row][col] == 1 and
+                not visited[row][col]):
+                visited[row][col] = True
+                Adjcell = queueNode(Point(row,col),
+                                    curr.dist+1)
+                q.append(Adjcell)
+
+    return -1
+
+def createDistance_Matrix(points):
+    distance_mat = []
+    for p in points:
+        dist = []
+        for p2 in points:
+            #dist.append(pythagoras(p,p2)) #BFS(map,p,p2)
+            ans = BFS(mat,p,p2)
+            dist.append(ans)
+            #dist.append(BFS(mat,p,p2))
+        distance_mat.append(dist)
+    return distance_mat
+
+def pythagoras(p1: Point, p2: Point):
+    return math.sqrt(( (p2.x - p1.x)**2 + (p2.y - p1.y)**2 ))
+
+
+
 
 
 
@@ -117,6 +221,7 @@ def getItems(request):
 @api_view(['GET'])
 def getItem(request, pk):
     item_ = items_collection.find_one({"id": pk})
+
     serializer = ItemSerializer(item_, many=False)
     return Response(serializer.data)
 
@@ -312,6 +417,8 @@ def updateUserFunc(row, value, pk):
 
 
 
+
+
 @api_view(['POST'])
 def createOrder(request, pk):
     print("in function")
@@ -343,6 +450,8 @@ def createOrder(request, pk):
 
         quant = item['quantity'] - order['quantity']
 
+        #if(quant >= -10):
+
         change = {"$set": {"quantity": quant}}
         items_collection.update_one(item, change)
 
@@ -351,7 +460,8 @@ def createOrder(request, pk):
             "clientId" : pk,
             "itemId": order['itemId'],
             "orderId" : serializer.data['id'],
-            "quantity": order['quantity']
+            "quantity": order['quantity'],
+            "picked": False
         }
         orders_collection.insert_one(order_1)
 
@@ -418,6 +528,9 @@ def deleteItemInOrder(request, orderId, itemId):
 #@api_view(['POST'])
 #def addItemInOrder(request, orderId):
 
+
+
+
 @api_view(['PUT'])
 def updateOrder(request, orderId):
     order = client_orders_collection.find({'id': orderId})
@@ -429,6 +542,15 @@ def updateOrder(request, orderId):
     client_orders_collection.update_one(order, change)
 
     return Response(True)
+
+
+@api_view(['GET'])
+def getLocationById(request, pk):
+    locations = location_collection.find({'id': pk})
+    serializer = LocationSerializer(locations, many=True)
+    return Response(serializer.data)
+
+
 
 @api_view(['GET'])
 def getLocations(request):
@@ -451,3 +573,109 @@ def getItemsAtLocation(request, pk): #pk : locationID
     items = items_collection.find({'locationId': pk})
     serializer = ItemSerializer(items, many=True)
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def pickedItem(request, orderId, itemId):
+    item = orders_collection.find_one({'orderId': orderId,'itemId': itemId })
+
+    change = {"$set": {"picked": True}}
+    orders_collection.update_one(item, change)
+
+    return Response(True)
+
+
+
+
+@api_view(['GET'])
+def getOrdersInOrder(request, pk):
+
+
+
+    orders_ = orders_collection.find({'orderId': pk})
+    lst = []
+    for o in orders_:
+        item = items_collection.find_one({'id': o['itemId']})
+        #print("test",item['id'])
+        location = location_collection.find_one({'id': item['locationId']})
+        lst.append({"itemId" : o['itemId'],"name":item['name'] , "quantity": o['quantity'], "x": location['x'], "y": location['y'], "zone": location['zone'] + 1, "picked": o['picked']})
+
+
+        for l in lst:
+            print("item order", l['itemId'])
+    #return Response(lst)
+
+    return Response(proxyOrder(lst))
+
+
+
+
+def proxyOrder(lst):
+    #nbItems = len(lst)
+    ans = []
+
+    points = [Point(11,1)]
+    for l in lst:
+        points.append(Point(l['x'],l['y']))
+
+    print("len",len(points))
+
+    for p in points:
+        print(p.x,p.y)
+
+
+    graph = createDistance_Matrix(points)
+    #graph.pop(0)
+
+
+
+
+
+
+    ord = TSP(graph, 0, len(points))[:-1]
+    ord.pop(0)
+
+    for idx, val in enumerate(ord):
+        print(val-1)
+
+
+
+    for idx, val in enumerate(ord):
+        ans.append(lst[val-1])
+        print(lst[val-1])
+
+    return ans
+
+
+
+
+def TSP(graph, s, nbItems):
+    # store all vertex apart from source vertex
+    vertex = []
+    for i in range(nbItems):
+        if i != s:
+            vertex.append(i)
+
+    # store minimum weight Hamiltonian Cycle
+    min_path = maxsize
+    next_permutation=permutations(vertex)
+    best_path = []
+    for i in next_permutation:
+
+        # store current Path weight(cost)
+        current_pathweight = 0
+
+        # compute current path weight
+        k = s
+        for j in i:
+            current_pathweight += graph[k][j]
+            k = j
+        current_pathweight += graph[k][s]
+
+        # update minimum
+        if current_pathweight < min_path:
+            min_path = current_pathweight
+            best_path = [s]
+            best_path.extend(list(i))
+            best_path.append(s)
+
+    return best_path
