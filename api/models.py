@@ -32,6 +32,7 @@ class Order(models.Model):
     idItem  = models.IntegerField()
     idOrder  = models.IntegerField()
     quantity  = models.IntegerField()
+    picked = models.BooleanField()
 
     def __str__(self):
         return self.idOrder
@@ -52,9 +53,9 @@ class Client_Order(models.Model):
 
 class Location(models.Model):
     location = models.TextField()
+    x = models.IntegerField()
+    y = models.IntegerField()
+    zone = models.IntegerField()
 
     def __str__(self):
         return self.location
-
-    class Meta:
-        ordering = ['location']
